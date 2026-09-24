@@ -103,6 +103,8 @@ Explicitly **not MVP**:
 
 Those can come later if the core system becomes something worth opening every day.
 
+The milestone breakdown (M1 Safe dump → M2 Understand → M3 Connect → M4 Resurface) lives in [`docs/MVP_PLAN.md`](docs/MVP_PLAN.md).
+
 ## Proposed stack
 
 Initial direction, not an irreversible commitment:
@@ -133,6 +135,8 @@ docs/
   ARCHITECTURE.md          Technical architecture
   DATA_MODEL.md            Initial domain/data model
   AI_PIPELINE.md           Thought processing and AI contracts
+  EXAMPLES.md              Golden fixture captures for the AI pipeline
+  MVP_PLAN.md              Design review + milestone plan for the MVP
 ```
 
 ## First milestone
