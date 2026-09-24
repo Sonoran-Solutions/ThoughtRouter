@@ -148,6 +148,13 @@ pub fn import_json(conn: &mut Connection, file: &Path) -> Result<ImportSummary> 
     let tx = conn.transaction()?;
     let mut summary = ImportSummary::default();
     for c in doc["captures"].as_array().into_iter().flatten() {
+        // Skip malformed entries rather than inserting NULL keys.
+        if c["id"].as_str().is_none()
+            || c["text"].as_str().is_none()
+            || c["captured_at"].as_str().is_none()
+        {
+            continue;
+        }
         let n = tx.execute(
             "INSERT OR IGNORE INTO captures (id, text, source, captured_at, deleted_at) VALUES (?1, ?2, ?3, ?4, ?5)",
             params![
@@ -170,6 +177,10 @@ pub fn import_json(conn: &mut Connection, file: &Path) -> Result<ImportSummary> 
         }
     }
     for p in doc["projects"].as_array().into_iter().flatten() {
+        if p["id"].as_str().is_none() || p["name"].as_str().is_none() {
+            continue;
+        }
+        let now = crate::util::now_iso();
         let n = tx.execute(
             "INSERT OR IGNORE INTO projects (id, name, description, momentum, created_at, updated_at)
              VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
@@ -178,8 +189,8 @@ pub fn import_json(conn: &mut Connection, file: &Path) -> Result<ImportSummary> 
                 p["name"].as_str(),
                 p["description"].as_str().unwrap_or(""),
                 p["momentum"].as_str().unwrap_or("exploring"),
-                p["created_at"].as_str(),
-                p["updated_at"].as_str()
+                p["created_at"].as_str().unwrap_or(&now),
+                p["updated_at"].as_str().unwrap_or(&now)
             ],
         )?;
         if n > 0 {
@@ -253,5 +264,12 @@ mod tests {
         // Idempotent.
         let s = import_json(&mut dst.conn(), Path::new(&r.files[0])).unwrap();
         assert_eq!(s, ImportSummary::default());
+        // Malformed entries are skipped, not inserted with NULL keys.
+        let bad = dir.path().join("bad.json");
+        fs::write(&bad, format!(r#"{{"format":"{EXPORT_FORMAT}","captures":[{{"text":"no id"}}],"projects":[{{"name":"x"}}]}}"#)).unwrap();
+        assert_eq!(
+            import_json(&mut dst.conn(), &bad).unwrap(),
+            ImportSummary::default()
+        );
     }
 }
