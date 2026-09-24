@@ -1,0 +1,72 @@
+{
+  "id": "01-multiple-thoughts",
+  "description": "Multiple unrelated thoughts in one dump",
+  "projects": [
+    {
+      "name": "Linux Control Center",
+      "description": "One Linux app replacing the proprietary handheld Windows utility"
+    },
+    {
+      "name": "Save Doctor",
+      "description": "Detects and repairs corrupted game saves"
+    }
+  ],
+  "history": [],
+  "capture": "Need to figure out why the handheld SSD keeps disconnecting. Also I still want one Linux control center that replaces the proprietary Windows app. The external cooler is probably the ugly part. Could an agent research that? Oh and Save Doctor could eventually detect weird save corruption automatically.",
+  "expect": {
+    "min_atoms": 3,
+    "atoms": [
+      {
+        "contains_any": [
+          "SSD"
+        ],
+        "types": [
+          "problem",
+          "research",
+          "task",
+          "question"
+        ]
+      },
+      {
+        "contains_any": [
+          "control center",
+          "Linux"
+        ],
+        "types": [
+          "project",
+          "feature",
+          "spark",
+          "someday"
+        ]
+      },
+      {
+        "contains_any": [
+          "cooler",
+          "agent"
+        ],
+        "types": [
+          "research",
+          "question",
+          "task",
+          "problem"
+        ]
+      },
+      {
+        "contains_any": [
+          "Save Doctor",
+          "corruption"
+        ],
+        "types": [
+          "feature",
+          "spark",
+          "someday",
+          "project"
+        ]
+      }
+    ],
+    "links_to": [
+      "Linux Control Center",
+      "Save Doctor"
+    ]
+  }
+}

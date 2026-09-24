@@ -1,0 +1,34 @@
+{
+  "id": "02-question-not-commitment",
+  "description": "Question, not commitment",
+  "projects": [
+    {
+      "name": "DualDex",
+      "description": "Companion app for Pokémon save files"
+    }
+  ],
+  "history": [],
+  "capture": "Could DualDex eventually have a plugin system so other game-specific helpers can hook into it?",
+  "expect": {
+    "min_atoms": 1,
+    "forbid_types": [
+      "task"
+    ],
+    "atoms": [
+      {
+        "contains_any": [
+          "plugin"
+        ],
+        "types": [
+          "spark",
+          "question",
+          "feature",
+          "someday"
+        ]
+      }
+    ],
+    "links_to": [
+      "DualDex"
+    ]
+  }
+}

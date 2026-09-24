@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["summary", "open_questions", "possible_next_actions", "decisions", "changed_assumptions"],
+  "properties": {
+    "summary": { "type": "string" },
+    "open_questions": { "type": "array", "items": { "type": "string" } },
+    "possible_next_actions": { "type": "array", "items": { "type": "string" } },
+    "decisions": { "type": "array", "items": { "type": "string" } },
+    "changed_assumptions": { "type": "array", "items": { "type": "string" } }
+  }
+}

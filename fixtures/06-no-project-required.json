@@ -1,0 +1,25 @@
+{
+  "id": "06-no-project-required",
+  "description": "A spark with no matching project",
+  "projects": [
+    {
+      "name": "Save Doctor",
+      "description": "Detects and repairs corrupted game saves"
+    },
+    {
+      "name": "DualDex",
+      "description": "Companion app for Pokémon save files"
+    }
+  ],
+  "history": [],
+  "capture": "Random thought: maybe old malls would make sick settings for a horror game.",
+  "expect": {
+    "min_atoms": 1,
+    "max_atoms": 2,
+    "forbid_types": [
+      "task"
+    ],
+    "no_links": true,
+    "no_new_project_suggestions": true
+  }
+}

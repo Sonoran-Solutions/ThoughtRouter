@@ -1,0 +1,24 @@
+{
+  "id": "05-changed-assumption",
+  "description": "A newer explicit decision",
+  "projects": [],
+  "history": [
+    "The app probably needs its own cloud backend so I can access thoughts everywhere."
+  ],
+  "capture": "Actually keep ThoughtRouter local-first. I don't want cloud sync to block the first useful version.",
+  "expect": {
+    "min_atoms": 1,
+    "atoms": [
+      {
+        "contains_any": [
+          "local-first",
+          "local first",
+          "cloud"
+        ],
+        "types": [
+          "decision"
+        ]
+      }
+    ]
+  }
+}
