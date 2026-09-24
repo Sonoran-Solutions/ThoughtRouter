@@ -1,0 +1,5 @@
+[env]
+# ts-rs writes generated TypeScript bindings here (`cargo test -p thoughtrouter-core`).
+TS_RS_EXPORT_DIR = { value = "src/bindings", relative = true }
+# serde sends i64 as a JSON number, so generate `number` rather than `bigint`.
+TS_RS_LARGE_INT = "number"

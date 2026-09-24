@@ -1,0 +1,22 @@
+{
+  "id": "04-recurring-concept",
+  "description": "Recurring concept links to the existing thread",
+  "projects": [
+    {
+      "name": "Linux Control Center",
+      "description": "One Linux app replacing the proprietary handheld Windows utility"
+    }
+  ],
+  "history": [
+    "Would be nice to replace the OneXPlayer Windows utility on Linux.",
+    "Most of the device controls already have Linux tools; maybe wrap them together.",
+    "The cooler still needs reverse engineering."
+  ],
+  "capture": "I keep coming back to that Linux control center idea. This might actually be worth building.",
+  "expect": {
+    "min_atoms": 1,
+    "links_to": [
+      "Linux Control Center"
+    ]
+  }
+}

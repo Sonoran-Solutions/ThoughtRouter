@@ -1,0 +1,26 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["atoms", "needs_clarification", "notes"],
+  "properties": {
+    "atoms": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["text", "type", "confidence", "quote"],
+        "properties": {
+          "text": { "type": "string" },
+          "type": {
+            "type": "string",
+            "enum": ["spark", "project", "feature", "task", "question", "research", "reference", "decision", "problem", "someday"]
+          },
+          "confidence": { "type": "number" },
+          "quote": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "needs_clarification": { "type": "boolean" },
+    "notes": { "type": "array", "items": { "type": "string" } }
+  }
+}

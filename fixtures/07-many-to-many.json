@@ -1,0 +1,23 @@
+{
+  "id": "07-many-to-many",
+  "description": "One thought relevant to two projects",
+  "projects": [
+    {
+      "name": "Pokémon Unbound Completion",
+      "description": "Finish and document a full Pokémon Unbound run, including save research"
+    },
+    {
+      "name": "Save Doctor",
+      "description": "Detects and repairs corrupted game saves"
+    }
+  ],
+  "history": [],
+  "capture": "The save-state reverse engineering work for Pokémon Unbound might teach me techniques that are useful for Save Doctor too.",
+  "expect": {
+    "min_atoms": 1,
+    "links_to": [
+      "Pokémon Unbound Completion",
+      "Save Doctor"
+    ]
+  }
+}

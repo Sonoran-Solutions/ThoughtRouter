@@ -1,0 +1,17 @@
+# Rust
+/target
+# Node
+node_modules/
+/dist
+# Tauri generated
+/src-tauri/gen/schemas
+# Local env
+.env
+*.local
+# Editor/OS
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+# Eval output
+/scripts/eval-out/

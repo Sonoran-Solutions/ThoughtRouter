@@ -1,0 +1,30 @@
+{
+  "id": "03-concrete-task",
+  "description": "Concrete task",
+  "projects": [
+    {
+      "name": "DualDex",
+      "description": "Companion app for Pokémon save files"
+    }
+  ],
+  "history": [],
+  "capture": "Change the DualDex import button copy so it doesn't specifically say MyBoy anymore. RetroArch saves already work.",
+  "expect": {
+    "min_atoms": 1,
+    "atoms": [
+      {
+        "contains_any": [
+          "button",
+          "MyBoy"
+        ],
+        "types": [
+          "task",
+          "feature"
+        ]
+      }
+    ],
+    "links_to": [
+      "DualDex"
+    ]
+  }
+}

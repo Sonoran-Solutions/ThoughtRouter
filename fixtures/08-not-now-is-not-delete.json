@@ -1,0 +1,25 @@
+{
+  "id": "08-not-now-is-not-delete",
+  "description": "Someday, with a sequencing constraint",
+  "projects": [],
+  "history": [],
+  "capture": "A browser extension for ThoughtRouter would be useful someday, but absolutely not before the desktop version works.",
+  "expect": {
+    "min_atoms": 1,
+    "forbid_types": [
+      "task"
+    ],
+    "atoms": [
+      {
+        "contains_any": [
+          "browser extension"
+        ],
+        "types": [
+          "someday",
+          "feature",
+          "spark"
+        ]
+      }
+    ]
+  }
+}
