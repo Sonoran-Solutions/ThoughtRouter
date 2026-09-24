@@ -111,10 +111,10 @@ Initial direction, not an irreversible commitment:
 
 ```text
 Desktop UI       React + TypeScript
-Desktop shell    Tauri
+Desktop shell    Tauri (Rust core owns data, jobs, AI calls)
 Local database   SQLite
 Vector search    sqlite-vec (or equivalent SQLite extension)
-AI               Provider-agnostic ThoughtProcessor interface
+AI               Provider-agnostic Analyzer/Embedder traits; OpenRouter first
 Primary mode     Local-first
 Later clients    Android / browser capture / CLI / share targets
 ```

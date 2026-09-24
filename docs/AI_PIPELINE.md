@@ -220,7 +220,7 @@ The user should still be able to search/read the raw capture.
 
 The core should not know whether analysis came from:
 
-- OpenAI;
+- OpenRouter (first adapter; routes to many upstream models);
 - a local model;
 - another remote provider;
 - a deterministic test double.
