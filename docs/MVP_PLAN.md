@@ -7,7 +7,7 @@ This document has two parts:
 1. **Review:** what is strong about the current design, and what needs fixing before any code is written.
 2. **Plan:** a narrower MVP, cut into four milestones you can use day to day, with a concrete schema and exit criteria.
 
-Anything marked **Proposed decision** below still needs your call. Once you accept one, copy it into `DECISIONS.md`.
+Decisions raised here are recorded in `DECISIONS.md`. **D-014 (Rust core)** and **D-020 (OpenRouter)** are accepted. D-015 to D-019 are still *Proposed*.
 
 ---
 
@@ -46,7 +46,7 @@ Anything marked **Proposed decision** below still needs your call. Once you acce
 | API keys live in JS memory | OS keychain via the `keyring` crate |
 | One language | Two languages (mitigated by generating TS types from Rust) |
 
-→ **Proposed decision D-014:** Rust owns persistence, jobs, AI adapters and scoring. React is a thin view layer. Generate TS types from the Rust structs (`tauri-specta` or `ts-rs`) so the two sides can't drift apart.
+→ **D-014 (accepted):** Rust owns persistence, jobs, AI adapters and scoring. React is a thin view layer. Generate TS types from the Rust structs (`tauri-specta` or `ts-rs`) so the two sides can't drift apart.
 
 **A2. User corrections conflict with "derived data can be regenerated".**
 Suppose the user changes an atom's type and later reprocesses the capture. Today the atoms get deleted and regenerated, and the correction is lost. That breaks the "user outranks AI" rule.
@@ -94,7 +94,7 @@ In practice the pipeline does LLM classification against named projects. With ze
 - The README repo map leaves out `docs/EXAMPLES.md` (fixed in this commit).
 - There is no `.gitignore`, `LICENSE`, CI, or `CLAUDE.md`. A short `CLAUDE.md` pointing at these docs and the invariants would help agent-driven development.
 - Fixtures live in prose. → Mirror them as `fixtures/*.json` (input, prior history, expected structural properties) so a test runner and an eval script can use them.
-- The first LLM provider and model are undecided (TASKS §6). That's fine for now, but it must be decided before M2. **Criteria:** strict JSON-schema structured output, plus low latency and cost on short inputs. Pick the embedding provider separately (see C8).
+- ~~The first LLM provider is undecided.~~ Resolved: **OpenRouter** for both analysis and embeddings (D-020). Default model IDs are still to be picked. They are settings, so this can be iterated on freely.
 
 ---
 
@@ -115,7 +115,7 @@ React + TS (Vite)  ── typed Tauri commands (tauri-specta) ──►  Rust co
                                                               ├─ jobs       single tokio worker, backoff, resume on start
                                                               ├─ processor/ Analyzer + Embedder traits
                                                               │               ├─ mock (deterministic, tests/CI)
-                                                              │               └─ <provider> (reqwest + JSON schema via schemars)
+                                                              │               └─ openrouter (reqwest; chat/completions + embeddings)
                                                               ├─ search     FTS5 bm25 ⊕ cosine, reciprocal-rank fusion
                                                               ├─ resurface  deterministic scoring + explanations
                                                               └─ secrets    keyring (OS keychain)
@@ -249,8 +249,13 @@ Goal: every capture becomes typed atoms, and the original stays visibly separate
 
 - [ ] **M** Job worker: one tokio task that picks up `queued` jobs whose `run_after <= now`, with exponential backoff (max 5 attempts). On startup it resets `running` jobs to `queued`. It emits Tauri events so the UI updates status live (`Saved → Analyzing… → Processed / Needs retry`).
 - [ ] **S** `Analyzer` trait and `MockAnalyzer` (deterministic: splits on sentences, types atoms by keyword).
-- [ ] **M** First real adapter: prompt in `prompts/analyze_capture.v1.md`, JSON schema generated from Rust types with `schemars`, strict structured output, serde validation (one repair retry, then `failed`), timeout, and a `processor_runs` row.
-- [ ] **S** Settings: provider, model, API key (keychain), **remote processing on/off** (off ⇒ jobs stay queued), and a visible "sent to <provider>" indicator.
+- [ ] **M** First real adapter: `OpenRouterAnalyzer` (D-020).
+  - `POST https://openrouter.ai/api/v1/chat/completions` with the prompt from `prompts/analyze_capture.v1.md`.
+  - `response_format: { type: "json_schema", json_schema: { name, strict: true, schema } }`, with the schema generated from Rust types via `schemars`.
+  - `provider: { require_parameters: true, data_collection: "deny" }` (plus `zdr: true` when the privacy setting is on).
+  - serde validation of every response (one repair retry, then `failed`), timeout, 429/5xx backoff.
+  - A `processor_runs` row recording the model OpenRouter reports actually serving the request.
+- [ ] **S** Settings: OpenRouter API key (keychain), analyzer model id, embedding model id, privacy toggles (`data_collection: deny`, ZDR-only), **remote processing on/off** (off ⇒ jobs stay queued), and a visible "sent to OpenRouter → <model>" indicator.
 - [ ] **M** Atom display under each capture: type chip, confidence, "generated" styling. Atom actions: change type, edit text (→ `origin='user'`), reject, add missing atom.
 - [ ] **S** "Reprocess" per capture and "Process backlog" for all unprocessed captures (this is how the M1 corpus gets processed).
 - [ ] **S** Convert `docs/EXAMPLES.md` into `fixtures/*.json`. Contract tests run on the mock in CI. `scripts/eval` runs the real provider against the fixtures and prints a pass/fail table of the structural assertions (not a CI gate).
@@ -262,7 +267,7 @@ Goal: every capture becomes typed atoms, and the original stays visibly separate
 
 Goal: thoughts stop being islands.
 
-- [ ] **S** `Embedder` trait with mock and real implementations. `embed` job for captures and atoms, keyed by model.
+- [ ] **S** `Embedder` trait with mock and `OpenRouterEmbedder` (`POST /api/v1/embeddings`, batched inputs). `embed` job for captures and atoms, keyed by model id. Changing the model in settings queues a re-embed.
 - [ ] **S** Brute-force cosine in Rust. Compute `atom_neighbors` top-k at embed time.
 - [ ] **M** Hybrid search: FTS5 results ⊕ vector results merged by reciprocal-rank fusion. Falls back to lexical-only, with a UI note, when no query embedding is available.
 - [ ] **M** Projects: create, rename, describe, set momentum. Seed your 5–10 real projects. Embed each project's name and description.
@@ -306,14 +311,15 @@ Use the stats view and a `DOGFOOD.md` log. Turn bad classifications into new fix
 
 Action entity · the generic polymorphic relationship graph · `revises`/`contradicts` detection · automatic project clustering · automatic synthesis regeneration · automatic momentum changes · `sqlite-vec` · local LLM (a local *embedder* is fine if it's easy) · everything in the TASKS parking lot except the global hotkey.
 
-## Proposed decisions (add to `DECISIONS.md` once accepted)
+## Decisions (recorded in `DECISIONS.md`)
 
-- **D-014:** Rust owns the core (DB, jobs, AI adapters, scoring). React is a view layer with generated types.
+- **D-014 (accepted):** Rust owns the core (DB, jobs, AI adapters, scoring). React is a view layer with generated types.
 - **D-015:** Brute-force vectors in SQLite BLOBs before `sqlite-vec`. Amends D-008.
 - **D-016:** Dogfooding starts at M1. The AI can process the backlog later.
 - **D-017:** Projects are user-confirmed entities. The AI suggests links and new projects but never creates projects on its own.
 - **D-018:** Captures can't be edited but can be deleted by the user. Deletion cascades to derived data.
 - **D-019:** User corrections are source data (`origin='user'`, `status='rejected'`) and survive reprocessing.
+- **D-020 (accepted):** OpenRouter is the first provider for both analysis and embeddings. Model IDs are configuration.
 
 ## Risks
 
@@ -324,7 +330,8 @@ Action entity · the generic polymorphic relationship graph · `revises`/`contra
 | Project sprawl | D-017 (no automatic creation). |
 | Link suggestions are noisy and erode trust | Show suggested links visibly as suggestions. Measure the confirm/reject ratio before building "connection" features. |
 | Resurfacing is annoying | 14-day suppression, the dismiss penalty, and one card on demand (no notifications in the MVP). |
-| Private text sent to a remote provider | Remote processing off switch, a visible indicator, capture and search keep working offline, and the `Embedder` split makes a local embedder possible. |
+| Private text sent to a remote provider | Remote processing off switch, a visible indicator, OpenRouter `data_collection: "deny"` / ZDR routing, capture and search keep working offline, and the `Embedder` split makes a local embedder possible. |
+| OpenRouter routes a request to an upstream that ignores the schema | `require_parameters: true`, plus local serde validation and a repair retry. The fixture eval is re-run whenever the default model changes. |
 
 ## MVP success criteria (evaluate after dogfooding)
 
@@ -336,8 +343,8 @@ Action entity · the generic polymorphic relationship graph · `revises`/`contra
 
 ## Next five actions
 
-1. Accept, amend or reject D-014 … D-019.
+1. Accept, amend or reject D-015 … D-019.
 2. Scaffold Tauri 2 + React + TS with CI and the `db` module (`captures` + trigger + FTS).
 3. Build the capture screen and history, and start dumping real thoughts that day.
 4. Add backup and export, then delete. M1 is done, and so is the week of dogfooding.
-5. Convert `EXAMPLES.md` to `fixtures/*.json` and choose the first analyzer and embedder providers.
+5. Convert `EXAMPLES.md` to `fixtures/*.json`, then shortlist 2–3 OpenRouter analyzer models and one embedding model, and compare them with the fixture eval.

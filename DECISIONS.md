@@ -148,6 +148,90 @@ GitHub, Android capture surfaces, voice, ChatGPT ingestion, and agent handoffs a
 
 ---
 
+## D-014 — Rust owns the application core
+
+**Status:** Accepted
+
+Persistence (`rusqlite`), the background job worker, AI adapters, search, and resurfacing scoring live in the Tauri Rust backend. React is a view layer that calls typed Tauri commands; TypeScript types are generated from Rust structs.
+
+**Reason:** Background jobs must survive window close/reload, SQLite extensions and FTS5 are simplest from Rust, and API keys can live in the OS keychain instead of webview memory.
+
+**Consequences:**
+
+- two languages, mitigated by generated types;
+- the AI abstraction is a pair of Rust traits (`Analyzer`, `Embedder`), not a TS interface.
+
+---
+
+## D-015 — Brute-force vectors before `sqlite-vec`
+
+**Status:** Proposed (amends D-008)
+
+Store embeddings as BLOBs keyed by `(object_type, object_id, model)` and compute cosine similarity in Rust. Adopt `sqlite-vec` only when measurement shows it is needed.
+
+**Reason:** A personal corpus of a few thousand vectors is milliseconds to scan, and fixed-dimension vector tables make embedding-model changes painful.
+
+---
+
+## D-016 — Dogfooding starts at M1
+
+**Status:** Proposed
+
+Daily use begins as soon as raw capture + search + backup work. AI processing is applied to the accumulated backlog later.
+
+**Reason:** Resurfacing needs a real corpus, and immutable captures make later reprocessing free.
+
+---
+
+## D-017 — Projects are user-confirmed entities
+
+**Status:** Proposed
+
+The user seeds projects. The AI suggests atom→project links and new projects, but never creates a project without a click.
+
+**Reason:** Avoids project sprawl and the cold-start problem of clustering over an empty database.
+
+---
+
+## D-018 — Captures are non-editable but deletable
+
+**Status:** Proposed
+
+Captures cannot be edited by anyone (enforced by a SQLite trigger). The user can delete a capture (tombstone, then purge), which cascades to its derived data.
+
+**Reason:** Immutability protects against AI rewriting history; it must not trap accidentally captured secrets.
+
+---
+
+## D-019 — User corrections are source data
+
+**Status:** Proposed
+
+User-created or user-edited atoms carry `origin = 'user'`; rejected links persist as `status = 'rejected'`. Reprocessing supersedes only AI-originated rows and never re-suggests rejected links.
+
+**Reason:** Reconciles "derived data is regenerable" with "user corrections outrank AI".
+
+---
+
+## D-020 — OpenRouter is the first AI provider
+
+**Status:** Accepted
+
+The first real `Analyzer` and `Embedder` adapters target OpenRouter (OpenAI-compatible `/api/v1/chat/completions` and `/api/v1/embeddings`). Model IDs are configuration, not code.
+
+**Reason:** One API key and one adapter give access to many models, so model choice can be iterated on without new adapters.
+
+**Consequences:**
+
+- structured output requests use `response_format: { type: "json_schema", json_schema: { strict: true, ... } }` with `provider.require_parameters = true` so requests are only routed to upstreams that honor the schema;
+- privacy defaults: `provider.data_collection = "deny"` (and `zdr = true` where the chosen model supports it), exposed as settings;
+- the processor still validates every response against the schema; routing is not trusted blindly;
+- `processor_runs` records the model id OpenRouter reports actually serving the request;
+- embeddings are keyed by model id, so switching embedding models means a re-embed job, not a migration;
+- the `Analyzer`/`Embedder` split is kept so a local embedder or direct provider can replace either side later.
+
+---
+
 ## How to add a decision
 
 Copy this template:

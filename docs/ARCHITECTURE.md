@@ -45,7 +45,7 @@ It should **not** optimize for multi-user SaaS scale yet.
 │ SQLite       │  │ AI Provider  │
 │              │  │ Abstraction  │
 │ raw data     │  │              │
-│ derived data │  │ OpenAI       │
+│ derived data │  │ OpenRouter   │
 │ relationships│  │ Local LLM    │
 │ embeddings   │  │ Future       │
 └──────────────┘  └──────────────┘
@@ -105,23 +105,32 @@ Do not introduce a separate vector database unless local usage proves SQLite-bas
 
 The application core should depend on an interface, not on one model/vendor.
 
-Illustrative TypeScript shape:
+The core is Rust (D-014), so the abstraction is a pair of traits. Analysis and embedding are split because they may come from different providers (e.g. a local embedder later). Illustrative shape:
 
-```ts
-interface ThoughtProcessor {
-  analyzeCapture(input: AnalyzeCaptureInput): Promise<ThoughtAnalysis>;
-  embedText(text: string): Promise<number[]>;
-  synthesizeThread(input: ThreadSynthesisInput): Promise<ThreadSynthesis>;
+```rust
+#[async_trait]
+trait Analyzer {
+    async fn analyze_capture(&self, input: AnalyzeCaptureInput) -> Result<CaptureAnalysis>;
+    async fn link_projects(&self, input: LinkProjectsInput) -> Result<Vec<LinkSuggestion>>;
+    async fn synthesize_thread(&self, input: ThreadSynthesisInput) -> Result<ThreadSynthesis>;
+}
+
+#[async_trait]
+trait Embedder {
+    fn model_id(&self) -> &str;
+    async fn embed(&self, texts: &[String]) -> Result<Vec<Vec<f32>>>;
 }
 ```
 
-Potential implementations:
+Implementations:
 
 ```text
-OpenAIThoughtProcessor
-LocalLLMThoughtProcessor
-MockThoughtProcessor
+OpenRouterAnalyzer / OpenRouterEmbedder   first real adapter (D-020)
+MockAnalyzer / MockEmbedder               deterministic, used in tests/CI
+Local*                                    later
 ```
+
+TypeScript types for the UI are generated from the Rust structs rather than hand-written.
 
 The mock implementation is important for deterministic tests.
 

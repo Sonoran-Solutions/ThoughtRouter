@@ -4,7 +4,7 @@ This file is the concrete build checklist. Keep `ROADMAP.md` for phases and this
 
 ## Current focus
 
-**Milestone: Phase 0 + Phase 1 — local app foundation and raw capture.**
+**Milestone: Phase 0 + Phase 1 — local app foundation and raw capture** (= M1 "Safe dump" in [`docs/MVP_PLAN.md`](docs/MVP_PLAN.md)).
 
 Do not start semantic linking, GitHub integration, mobile capture, or agent orchestration until the raw-capture loop works reliably.
 
@@ -88,7 +88,7 @@ A simulated processor failure leaves the raw capture intact and retryable.
 
 ## 4. ThoughtProcessor abstraction
 
-- [ ] Define provider-independent `ThoughtProcessor` interface
+- [ ] Define provider-independent `Analyzer` + `Embedder` traits (Rust)
 - [ ] Define `AnalyzeCaptureInput`
 - [ ] Define structured `CaptureAnalysis` result
 - [ ] Define version metadata contract
@@ -135,7 +135,8 @@ A messy multi-topic capture can produce multiple structured atoms while the unto
 
 ## 6. First real AI adapter
 
-- [ ] Select first provider/model for iteration
+- [x] Select first provider for iteration — OpenRouter (D-020)
+- [ ] Pick default analyzer model (configurable model id)
 - [ ] Implement adapter behind `ThoughtProcessor`
 - [ ] Use schema-constrained structured output
 - [ ] Add timeout handling
@@ -168,7 +169,8 @@ You can find an old thought from remembered words even before vector search exis
 
 ## 8. Embeddings + semantic search
 
-- [ ] Choose initial embedding provider/model
+- [x] Choose initial embedding provider — OpenRouter `/api/v1/embeddings` (D-020)
+- [ ] Pick default embedding model
 - [ ] Create embedding storage
 - [ ] Record embedding model/version
 - [ ] Add vector extension (`sqlite-vec` or equivalent)
