@@ -7,6 +7,8 @@ This document has two parts:
 1. **Review:** what is strong about the current design, and what needs fixing before any code is written.
 2. **Plan:** a narrower MVP, cut into four milestones you can use day to day, with a concrete schema and exit criteria.
 
+> **Status (2026-09-24): M1–M4 are implemented.** See "Implementation notes" at the end for where the build differs from this plan. Next step: choose default models, then dogfood.
+
 Decisions raised here are recorded in `DECISIONS.md`. **D-014 (Rust core)** and **D-020 (OpenRouter)** are accepted. D-015 to D-019 are still *Proposed*.
 
 ---
@@ -348,3 +350,23 @@ Action entity · the generic polymorphic relationship graph · `revises`/`contra
 3. Build the capture screen and history, and start dumping real thoughts that day.
 4. Add backup and export, then delete. M1 is done, and so is the week of dogfooding.
 5. Convert `EXAMPLES.md` to `fixtures/*.json`, then shortlist 2–3 OpenRouter analyzer models and one embedding model, and compare them with the fixture eval.
+
+---
+
+# Implementation notes (as built)
+
+Where the implementation differs from the plan above, and why:
+
+| Plan | As built | Why |
+|---|---|---|
+| `processing_jobs.capture_id` | `processing_jobs.target_id` (+ `embed_project` job) | Projects need embedding jobs too. |
+| FTS5 external-content tables on `rowid` | FTS5 tables that store their own copy, keyed by id | Implicit rowids can be renumbered by `VACUUM`; the text volume is tiny. |
+| "Create project?" held in the link table | Separate `project_suggestions` table | Suggestions aren't links; they need their own accept/dismiss state. |
+| `project_syntheses` | + `source_capture_ids` column | Provenance: which captures a synthesis was based on. |
+| Schema generated with `schemars` | Hand-written strict JSON schemas in `crates/core/prompts/*.schema.json`, validated locally with serde | Strict structured-output mode rejects several keywords `schemars` emits; a test checks every schema is strict. |
+| `tauri-specta` | `ts-rs` generates `src/bindings/*.ts` from the Rust types; commands are wrapped by hand in `src/api.ts` | `tauri-specta` for Tauri 2 is still a release candidate. |
+| Linking only runs for new captures | Creating or renaming a project also queues linking for up to 15 related older captures | Without it, anything captured before a project existed would never be linked. |
+| Mock provider for tests only | Mock is also selectable in Settings | Lets you try the full pipeline without a key. It is heuristic, so switch back to OpenRouter for real use. |
+| (not specified) | Trash is purged after 30 days; a backup is written on every launch (newest 10 kept) | D-018, B3. |
+
+**Placeholders waiting on you:** the analyzer and embedding model ids (empty in Settings until chosen), the similarity threshold (0.75 until tuned for the chosen embedding model), resurfacing weights (the Score v0 values above), the global shortcut (`CommandOrControl+Shift+Space`), the app identifier (`com.sonoransolutions.thoughtrouter`, which also names the data folder), and the license (`UNLICENSED`).

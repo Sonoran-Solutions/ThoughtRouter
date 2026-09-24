@@ -232,6 +232,16 @@ The first real `Analyzer` and `Embedder` adapters target OpenRouter (OpenAI-comp
 
 ---
 
+## D-021 — Types flow from Rust; prompts and schemas are versioned files
+
+**Status:** Accepted (implementation)
+
+The TypeScript types the UI uses are generated from the Rust domain types with `ts-rs` (`src/bindings`, checked for drift in CI). Prompts and their strict JSON schemas live in `crates/core/prompts/` as versioned files (`analyze_capture.v1.md` + `.schema.json`), and every processor run records the prompt version, schema version and the model that actually served it.
+
+**Reason:** One source of truth for types, and prompts that can be diffed, reviewed and bumped deliberately (docs/AI_PIPELINE.md "Prompt/version discipline").
+
+---
+
 ## How to add a decision
 
 Copy this template:

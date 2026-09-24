@@ -285,7 +285,7 @@ Then relationships might link the project and research atom to the same existing
 
 ## Candidate SQLite schema
 
-This is illustrative, not migration-ready SQL.
+This is illustrative, not migration-ready SQL. The implemented schema is `crates/core/migrations/0001_init.sql` (see docs/MVP_PLAN.md "Implementation notes").
 
 ```sql
 captures(
